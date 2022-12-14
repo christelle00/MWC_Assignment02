@@ -171,7 +171,7 @@ class StepCounterListener<stepsCompleted> implements SensorEventListener {
     int stepThreshold = 10;
 
     // Android step detector
-    public int mAndroidStepCounter = 0;
+    public int mAndroidStepCounter = HomeFragment.stepsCompleted;
 
 
     // TextView and Progress Bar
@@ -194,6 +194,15 @@ class StepCounterListener<stepsCompleted> implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent event) {
 
+        // Timestamp
+        long timeInMillis = System.currentTimeMillis() + (event.timestamp - SystemClock.elapsedRealtimeNanos()) / 1000000;
+
+        // Convert the timestamp to date
+        SimpleDateFormat jdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
+        jdf.setTimeZone(TimeZone.getTimeZone("GMT+2"));
+        String date = jdf.format(timeInMillis);
+        timestamp = date;
+
         switch (event.sensor.getType()) {
 
             // Case of the ACC
@@ -205,28 +214,22 @@ class StepCounterListener<stepsCompleted> implements SensorEventListener {
                 float z = event.values[2];
 
                 //////////////////////////// -- PRINT ACC VALUES -- ////////////////////////////////////
-                // Timestamp
-                long timeInMillis = System.currentTimeMillis() + (event.timestamp - SystemClock.elapsedRealtimeNanos()) / 1000000;
 
-                // Convert the timestamp to date
-                SimpleDateFormat jdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
-                jdf.setTimeZone(TimeZone.getTimeZone("GMT+2"));
-                String date = jdf.format(timeInMillis);
 
-                /*
+
                 // print a value every 1000 ms
-                long curTime = System.currentTimeMillis();
+                /*long curTime = System.currentTimeMillis();
                 if ((curTime - lastUpdate) > 1000) {
                     lastUpdate = curTime;
 
                     Log.d("ACC", "X: " + String.valueOf(x) + " Y: " + String.valueOf(y) + " Z: "
                             + String.valueOf(z) + " t: " + String.valueOf(date));
 
-                }
-                */
+                }*/
+
 
                 // Get the date, the day and the hour
-                timestamp = date;
+                //timestamp = date;
                 day = date.substring(0,10);
                 hour = date.substring(11,13);
 
@@ -251,7 +254,7 @@ class StepCounterListener<stepsCompleted> implements SensorEventListener {
             case Sensor.TYPE_STEP_DETECTOR:
 
                 // Calculate the number of steps
-                countSteps(event.values[0]);
+                countSteps(event.values[0], timestamp);
         }
     }
 
@@ -319,11 +322,27 @@ class StepCounterListener<stepsCompleted> implements SensorEventListener {
 
 
     // Calculate the number of steps from the step detector
-    private void countSteps(float step) {
+    private void countSteps(float step, String timestamp) {
 
         //Step count
         mAndroidStepCounter += (int) step;
         Log.d("NUM STEPS ANDROID", "Num.steps: " + String.valueOf(mAndroidStepCounter));
+
+        // Update TextView and ProgressBar
+        stepsCountTextView.setText(String.valueOf(mAndroidStepCounter));
+        stepsCountProgressBar.setProgress(mAndroidStepCounter);
+
+
+        day = timestamp.substring(0,10);
+        hour = timestamp.substring(11,13);
+
+
+        //Insert the data in the database
+        ContentValues values = new ContentValues();
+        values.put(StepAppOpenHelper.KEY_TIMESTAMP, timestamp);
+        values.put(StepAppOpenHelper.KEY_DAY, day);
+        values.put(StepAppOpenHelper.KEY_HOUR, hour);
+        database.insert(StepAppOpenHelper.TABLE_NAME, null, values);
     }
 
 }

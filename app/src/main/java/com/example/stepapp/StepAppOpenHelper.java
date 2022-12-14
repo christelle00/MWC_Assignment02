@@ -148,6 +148,8 @@ public class StepAppOpenHelper extends SQLiteOpenHelper {
         // 4. Iterate over returned elements on the cursor
         cursor.moveToFirst();
         for (int index=0; index < cursor.getCount(); index++){
+            System.out.println(cursor.getString(0));
+            System.out.println(cursor.getString(1));
             Integer tmpKey = Integer.parseInt(cursor.getString(0));
             Integer tmpValue = Integer.parseInt(cursor.getString(1));
 
@@ -170,14 +172,35 @@ public class StepAppOpenHelper extends SQLiteOpenHelper {
      * Utility function to get the number of steps by day
      *
      * @param context: application context
-     * @return map: map with key-value pairs hour->number of steps
+     * @return map: map with key-value pairs day->number of steps
      */
     //
     public static Map<String, Integer> loadStepsByDay(Context context){
         Map<String, Integer> map = new TreeMap<>();
 
+        StepAppOpenHelper databaseHelper = new StepAppOpenHelper(context);
+        SQLiteDatabase database = databaseHelper.getReadableDatabase();
 
-      return map;
+        Cursor cursor = database.rawQuery("SELECT day, COUNT(*) FROM num_steps GROUP BY day", new String[]{});
+
+        cursor.moveToFirst();
+        cursor.moveToNext();
+        System.out.println(cursor);
+        for (int index=1; index < cursor.getCount(); index++){
+            String date = cursor.getString(0);
+            Integer tmpValue = Integer.parseInt(cursor.getString(1));
+
+            //2. Put the data from the database into the map
+            map.put(date, tmpValue);
+
+            cursor.moveToNext();
+        }
+
+        cursor.close();
+        database.close();
+
+
+        return map;
     }
 }
 
