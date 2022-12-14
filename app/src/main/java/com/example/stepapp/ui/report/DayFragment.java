@@ -106,7 +106,7 @@ public class DayFragment extends Fragment {
 
         //Modifying properties of tooltip
         column.tooltip()
-                .titleFormat("At hour: {%X}")
+                .titleFormat("At day: {%X}")
                 .format("{%Value}{groupsSeparator: } Steps")
                 .anchor(Anchor.RIGHT_TOP);
 
@@ -125,7 +125,7 @@ public class DayFragment extends Fragment {
 
         // TODO 6: Modify the UI of the cartesian
         cartesian.xAxis(0).title("Day");
-        cartesian.yAxis(0).title("NUmber of steps");
+        cartesian.yAxis(0).title("Number of steps");
         cartesian.background().fill("#00000000");
         cartesian.animation(true);
 
